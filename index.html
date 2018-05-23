@@ -1,0 +1,568 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <title>reveal.js</title>
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/simple.css">
+
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/solarized.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+    </head>
+    <body>
+        <div class="reveal"> <div class="slides">
+            <section id="title_page">
+                <h2><span style="color:slateblue">Introduction to Bayesian Statistics and Computations</span></h2>
+                <h4>Anthony Khong</h4>
+                <h4>23 May 2018</h4>
+            </section>
+
+            <section id="contents_page">
+                <ol>
+                    <li>Bayesian Statistics</li>
+                    <ul>
+                        <li>Definition of Probability</li>
+                        <li>Bayesian Inference</li>
+                        <li>Statistical Decision Theory</li>
+                    </ul>
+                    <li>Bayesian Computations</li>
+                    <ul>
+                        <li>Analytical Solutions</li>
+                        <li>Simulation Methods</li>
+                        <li>Variational Methods</li>
+                    </ul>
+                </ol>
+            </section>
+
+            <section id="bayesian_statistics">
+                <section>
+                    <h2><span style="color:slateblue">1. Bayesian Statitics</span></h2>
+
+                    <h3><span style="color:slateblue">1.1 Definition of Probability</span></h3>
+                </section>
+                <section>
+                    <p>Suppose I'm going to flip a coin.</p>
+                    <p>What is $\mathbb{P}(Head)$?</p>
+                </section>
+                <section>
+                    <p>Suppose I've flipped a coin.</p>
+                    <p>What is $\mathbb{P}(Head)$?</p>
+                </section>
+                <section>
+                    <p>What is probability?</p>
+                    <p class="fragment fade-up">Frequentist: limiting relative frequency of an event.</p>
+                    <p class="fragment fade-up">Bayesian: degree of belief of an event.</p>
+                    <aside class="notes">
+                        In this sense, we cannot use the frequentist framework to estimate the likelihood of one-off events. For example, P(Netanyahu win next election).
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">1.2 Bayesian Inference</span></h3>
+                </section>
+                <section>
+                    <p></p>
+                    $$Y \sim \mathcal{N}(\mu, \sigma^2)$$
+                    <p></p>
+                    <p>How do we <b>infer</b> $(\mu, \sigma^2)$ from $\{y_i\}_{i=1}^N$?</p>
+                    <aside class="notes">
+                        Notation: capital letters for the random variables and small letters for their realisations.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Frequentist Solution</span></h3>
+                    <p></p>
+                    $$
+                    \hat{\mu} = \dfrac{1}{N}\sum_i Y_i \quad
+                    \hat{\sigma}^2 = \dfrac{1}{N}\sum_i (Y_i - \hat{\mu})^2
+                    $$
+                    <p class="fragment fade-up">
+                        Find <b>estimators</b> whose sampling distributions are close to the unknown true parameters.
+                    </p>
+                    <aside class="notes">
+                        Under repeated sampling, the true value lies somewhere in a region of high density.
+
+                        The output is a random variable for each parameter, for which we have only one realisation.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Bayesian Solution</span></h3>
+                    <p></p>
+                    $$
+                    \pi(\mu, \sigma^2 | \boldsymbol y)
+                        = \dfrac{p(\boldsymbol y | \mu, \sigma^2) \pi(\mu, \sigma^2)}{p(\boldsymbol y)}
+                    $$
+                    <p class="fragment fade-up">
+                        Formulate a <b>posterior belief</b> of the unknown parameters by refining prior beliefs with data.
+                    </p>
+                    <aside class="notes">
+                        We refine beliefs when we see more data. In some sense, this statement cannot be false.
+
+                        The output is a distribution over each parameter.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">The Bayesian Recipe</span></h3>
+                    <p class="fragment fade-up">
+                        Parameters of Interest with Prior:
+                        $$\boldsymbol\theta \sim \pi(\boldsymbol \theta)$$
+                    </p>
+                    <p class="fragment fade-up">
+                        Observed Data with Likelihood:
+                        $$ \mathcal{D} | \boldsymbol \theta \sim p(\mathcal{D} | \boldsymbol \theta)$$
+                    </p>
+                    <p class="fragment fade-up">
+                        Posterior distribution by Bayes Theorem:
+                        $$\pi(\boldsymbol \theta | \mathcal{D}) \propto p(\mathcal{D} | \boldsymbol \theta) \pi(\boldsymbol\theta)$$
+                    </p>
+                    <aside class="notes">
+                        We'll see later that in most cases the denominator is not that important.
+
+                        We care about the parameters. And p(D) is only there to make the numerator sum to zero.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">1.3 Statistical Decision Theory</span></h3>
+                </section>
+                <section>
+                    <p>How do you turn $\pi(\boldsymbol \theta | \mathcal{D})$ into $\hat{\theta}$ ?</p>
+                    <p></p>
+                    <p class="fragment fade-up">
+                        $$
+                        \mathbb{E}_{\boldsymbol\theta}\Big(L(\boldsymbol\theta, \tilde{\boldsymbol \theta})\Big)
+                            = \int_{\boldsymbol\theta} L(\boldsymbol\theta, \tilde{\boldsymbol \theta})
+                              \pi(\boldsymbol \theta | \mathcal{D}) d\boldsymbol\theta
+                            = L(\tilde{\boldsymbol\theta})
+                        $$
+                    </p>
+                    <p></p>
+                    <p class="fragment fade-up">
+                        $$ \hat{\boldsymbol \theta} = \arg \min_{\tilde{\boldsymbol \theta}} L(\tilde{\boldsymbol\theta}) $$
+                    </p>
+                    <aside class="notes">
+                        How do we go from a predictive distribution to a point prediction.
+
+                        This recipe is not dependent on sample size, because we never need to invoke asymptotics.
+                    </aside>
+                </section>
+                <section>
+                    <p class="fragment fade-up">
+                        $$
+                        L(\boldsymbol\theta, \tilde{\boldsymbol \theta})
+                        = \sum_{j=1}^{J}(\theta_j - \tilde{\theta}_j)^2
+                        \,\Rightarrow\, \hat{\boldsymbol \theta}
+                        = mean_{\boldsymbol\theta | \mathcal{D}} (\boldsymbol\theta)
+                        $$
+                    </p>
+                    <p class="fragment fade-up">
+                        $$
+                        L(\boldsymbol\theta, \tilde{\boldsymbol \theta})
+                        = \sum_{j=1}^{J}|\boldsymbol\theta_j - \tilde{\boldsymbol \theta}_j|
+                        \,\Rightarrow\, \hat{\boldsymbol \theta}
+                        = median_{\boldsymbol\theta | \mathcal{D}} (\boldsymbol\theta)
+                        $$
+                    </p>
+                    <p class="fragment fade-up">
+                        $$
+                        L(\boldsymbol\theta, \tilde{\boldsymbol \theta})
+                        = -\mathbb{1}(\boldsymbol\theta = \tilde{\boldsymbol\theta})
+                        \,\Rightarrow\, \hat{\boldsymbol \theta}
+                        = mode_{\boldsymbol\theta | \mathcal{D}} (\boldsymbol\theta)
+                        $$
+                    </p>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Optimal Action</span></h3>
+                    <p> Suppose we have historical data and actions $(\mathcal{D}, \boldsymbol a)$:</p>
+                    $$
+                    \pi(\boldsymbol \theta | \mathcal{D}, \boldsymbol a)
+                    \propto p(\mathcal{D} | \boldsymbol\theta, \boldsymbol a) \pi(\boldsymbol \theta)
+                    $$
+                    <p>How should we pick the next action $a'$?</p>
+                    <p class="fragment fade-up">
+                    <small>
+                        $$
+                        \mathbb{E}_{\mathcal{D}'}\Big(L(\mathcal{D}', a')\Big)
+                        = \int_{\mathcal{D}'} \int_{\boldsymbol\theta}
+                        L(\mathcal{D}', a') p(\mathcal{D}' | \boldsymbol \theta, a')
+                        \pi(\boldsymbol \theta | \mathcal{D}, \boldsymbol a) d\boldsymbol\theta d\mathcal{D}'
+                        = L(a')
+                        $$
+                    </small>
+                    <p class="fragment fade-up">
+                        $$ a'^* = \arg \min_{a'} L(a') $$
+                    </p>
+                    </p>
+                    <aside class="notes">
+                        Often we do not care about the parameter values or choosing its value. How do we use this to pick actions?
+
+                        If you're wondering why TF Probability is a big deal...
+                        It lets you think at this high level instead of the actual components of these functions.
+                        Conceptually, this is very easy. Could you imagine what you need to do in the Frequentist framework?
+                    </aside>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2><span style="color:slateblue">2. Bayesian Computations</span></h2>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Main Problem of Bayesian Computation</span></h3>
+
+                    $$
+                    \mathbb{E}_{\boldsymbol\theta | \mathcal{D}}\Big(\phi(\boldsymbol\theta)\Big)
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol \theta) \pi(\boldsymbol \theta | \mathcal{D}) d \boldsymbol\theta
+                    $$
+
+                    <p class="fragment fade-up">
+                    $$
+                    \pi(\boldsymbol \theta | \mathcal{D})
+                    = \dfrac{p(\mathcal{D} | \boldsymbol \theta) \pi(\boldsymbol\theta)}{p(\mathcal{D})}
+                    = \dfrac{p(\mathcal{D} | \boldsymbol \theta) \pi(\boldsymbol\theta)}{\int_{\boldsymbol\theta}p(\mathcal{D} | \boldsymbol \theta) \pi(\boldsymbol\theta) d\boldsymbol\theta}
+                    $$
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$ \tilde{\pi}(\boldsymbol \theta | \mathcal{D}) = p(\mathcal{D} | \boldsymbol \theta) \pi(\boldsymbol\theta) $$
+                    </p>
+
+                    <aside class="notes">
+                        Any interesting summary of the posterior distribution can be expressed with this integral.
+
+                        For the following methods, let's focus on the high-level concepts instead of the actual equations. We have TF Prob, Stan and JAGs to do all of this.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">2.1 Analytical Solutions</span></h3>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Conjugate Prior for Univariate Gaussian</span></h3>
+
+                    <p>$$Y | \mu, \sigma^2 \sim \mathcal{N}(\mu, \sigma^2)$$</p>
+
+                    <p class="fragment fade-up">
+                        $$\sigma^{-2} \sim \mathcal{G}(\alpha_0, \beta_0) \quad \mu | \sigma^2 \sim \mathcal{N}(\mu_0, \lambda_0 \sigma^2)$$
+                    </p>
+
+                    <p>
+                    $$
+                    \pi(\mu, \sigma^2 | \boldsymbol y)
+                        = \dfrac{p(\boldsymbol y | \mu, \sigma^2) \pi(\mu, \sigma^2)}{p(\boldsymbol y)}
+                    $$
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$\sigma^{-2} | \mathcal{D} \sim \mathcal{G}(\cdots, \cdots) \quad \mu | \sigma^2, \mathcal{D} \sim \mathcal{N}(\cdots, \cdots)$$
+                    </p>
+
+                    <aside class="notes">
+                        You know fully the distribution of the posterior distribution. In some sense, there isn't a computational problem.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Linear Regression with Conjugate Priors</span></h3>
+                    <img data-src="figures/bayesian_linear_regression_conjugate_prior.png" width="85%">
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">2.2 Simulation Methods</span></h3>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Monte Carlo Integration</span></h3>
+                    $$\mathbb{E}(\phi) = \int_{\boldsymbol\theta} \phi(\boldsymbol \theta) \pi(\boldsymbol \theta | \mathcal{D}) d \boldsymbol\theta$$
+                    <p>Suppose we have a sample $\{\boldsymbol\theta_m\}_{m=1}^M$ from $\pi(\boldsymbol\theta | \mathcal{D})$:</p>
+
+                    <p class="fragment fade-up">
+                    $$
+                    \hat{\phi}
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol \theta)
+                    \Big\{ \dfrac{1}{M} \sum_{m=1}^M \delta_{\boldsymbol\theta_m}(\boldsymbol\theta) \Big\} d \boldsymbol\theta
+                    = \dfrac{1}{M} \sum_{m=1}^M \phi(\boldsymbol \theta_m)
+                    $$
+                    </p>
+
+                    <p class="fragment fade-up">
+                    <b>LLN:</b> if $\mathbb{E}(\phi)$ and $\mathbb{V}(\phi)$ are both finite, then
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$
+                    \sqrt{\dfrac{M}{\mathbb{V}(\phi)}}\Big(\hat{\phi} - \mathbb{E}(\phi)\Big)
+                    \overset{D}{\rightarrow} \mathcal{N}(0, 1)
+                    $$
+                    </p>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Rejection Sampling</span></h3>
+
+                    <p>
+                    Require: $q(\boldsymbol\theta)$ and $C \in \mathbb{R}^{++}$ where
+                    $\dfrac{\pi(\boldsymbol\theta | \mathcal{D})}{Cq(\boldsymbol\theta)} \leq 1 \, \forall \boldsymbol\theta$
+                    </p>
+
+                    <p></p>
+                    <ol class="fragment fade-up">
+                        <li>Draw $\boldsymbol\theta \sim q$</li>
+                        <li>Accept $\,\boldsymbol\theta\,$ w.p. $\dfrac{\pi(\boldsymbol\theta | \mathcal{D})}{Cq(\boldsymbol\theta)}$</li>
+                    </ol>
+
+                    <aside class="notes">
+                        There's the normalised version of this if you don't know the normalising constant.
+                    </aside>
+
+                    <aside class="notes">
+                        We'll see a lot of proposal distributions. In many cases, a sensible choice is a normal distribution around the posterior modes.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Importance Sampling</span></h3>
+                    <p>
+                    Require:
+                    $q(\boldsymbol\theta)$ where $\dfrac{\pi(\boldsymbol\theta | \mathcal{D})}{q(\boldsymbol\theta)} &lt; \infty \, \forall \boldsymbol\theta$
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$
+                    \mathbb{E}(\phi)
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol \theta) \pi(\boldsymbol \theta | \mathcal{D}) d \boldsymbol\theta
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol \theta)
+                    \dfrac{\pi(\boldsymbol \theta | \mathcal{D})}{q(\boldsymbol \theta)} q(\boldsymbol \theta)
+                    d \boldsymbol\theta
+                    $$
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$
+                    \hat{\phi} = \sum_{m=1}^M \phi(\boldsymbol \theta_m) w(\boldsymbol\theta_m)
+                    \quad
+                    w(\boldsymbol\theta) = \dfrac{\pi(\boldsymbol \theta | \mathcal{D})}{q(\boldsymbol \theta)}
+                    $$
+                    </p>
+
+                    <aside class="notes">
+                        There's the normalised version of this if you don't know the normalising constant.
+                    </aside>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Markov Chain Monte Carlo</span></h3>
+
+                    <p>
+                    Require: $K(\boldsymbol\theta, \boldsymbol\theta')$ where
+                    $
+                    \int_{\boldsymbol\theta} K(\boldsymbol\theta, \boldsymbol\theta') d\boldsymbol\theta
+                    = \pi(\boldsymbol\theta' | \mathcal{D})
+                    $
+                    </p>
+
+                    <p></p>
+                    <ol class="fragment fade-up">
+                        <li>Initialise $\boldsymbol\theta_0$</li>
+                        <li>
+                            For $m = 1, \cdots, M$
+                            $$\boldsymbol\theta_{m} | \boldsymbol\theta_{m-1}\sim K(\boldsymbol\theta_{m-1}, \cdot)$$
+                        </li>
+                    </ol>
+
+                    <p class="fragment fade-up">
+                    <b>Ergodic Theorem:</b> if $K$ satisfies regularity conditions
+
+                    $$
+                    \lim_{M \rightarrow \infty} \sum_{i=1}^M \phi(\boldsymbol\theta_m)
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol\theta) \pi(\boldsymbol\theta | \mathcal{D}) d\boldsymbol\theta
+                    $$
+                    </p>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Metropolis-Hastings Algorithm</span></h3>
+
+                    <p>
+                    Require: $q(\boldsymbol\theta' | \boldsymbol\theta)$ with reguarity conditions.
+                    </p>
+
+                    <p></p>
+                    <ol class="fragment fade-up">
+                        <li>$\boldsymbol\theta' \sim q(\cdot | \boldsymbol\theta_{m-1})$</li>
+                        <li>
+                            Accept $\,\boldsymbol\theta'\,$ w.p.
+                            $
+                            \, min \Big( \dfrac{\pi(\boldsymbol\theta' | \mathcal{D}) q(\boldsymbol\theta_{m-1} | \boldsymbol\theta')}{\pi(\boldsymbol\theta_{m-1} | \mathcal{D}) q(\boldsymbol\theta' | \boldsymbol\theta_{m-1})}, 1 \Big)
+                            $
+                        </li>
+                        <li>If accept $\boldsymbol\theta_m = \boldsymbol\theta'$, otherwise $\boldsymbol\theta_m = \boldsymbol\theta_{m-1}$</li>
+                    </ol>
+
+                    <p></p>
+
+                    <p class="fragment fade-up">
+                    For example:
+                    $
+                    \quad
+                    \boldsymbol\theta' = \boldsymbol\theta_{m-1} + \boldsymbol\varepsilon
+                    \quad \boldsymbol\varepsilon \sim \mathcal{N}(0, \sigma^2 I)
+                    $
+                    </p>
+                </section>
+                <section>
+                    What is a good choice of $q(\cdot | \boldsymbol\theta_{m-1})$?
+
+                    <p class="fragment fade-up">
+                    $$
+                    \mathbb{V}(\hat{\phi}) = \dfrac{1}{\sqrt{M}} \Big( \dfrac{\mathbb{V}(\phi)}{1 - \rho^2}\dfrac{1 + \rho}{1 - \rho} \Big)
+                    $$
+                    </p>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">2.3 Variational Methods</span></h3>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Variational Inference</span></h3>
+
+                    <p>
+                    Require: easy approximating distribution $q(\boldsymbol\theta | \boldsymbol\varphi)$
+                    </p>
+
+                    <p></p>
+                    <p class="fragment fade-up">
+                    $$
+                    \boldsymbol\varphi^*
+                    = \arg \min_{\boldsymbol\varphi} KL(q(\boldsymbol\theta | \boldsymbol\varphi) \,||\, \pi(\boldsymbol\theta | \mathcal{D}))
+                    $$
+                    </p>
+
+                    <p></p>
+                    <p class="fragment fade-up">
+                    $$
+                    \tilde{\phi}
+                    = \int_{\boldsymbol\theta} \phi(\boldsymbol\theta) q(\boldsymbol\theta | \boldsymbol\varphi^*) d\boldsymbol\theta
+                    \approx \mathbb{E}(\phi)
+                    $$
+                    </p>
+
+                    <p class="fragment fade-up">
+                        No consistency guarantees!
+                    </p>
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">KL Gradients</span></h3>
+
+                    <small>
+                    $$
+                    KL(q(\boldsymbol\theta | \boldsymbol\varphi) \,||\, \pi(\boldsymbol\theta | \mathcal{D}))
+                    = \int_{\boldsymbol\theta} \log \Big(
+                    \dfrac{q(\boldsymbol\theta | \boldsymbol\varphi)}{\pi(\boldsymbol\theta | \mathcal{D})}
+                    \Big) q(\boldsymbol\theta | \boldsymbol\varphi) d\boldsymbol\theta
+                    = KL(\boldsymbol\varphi)
+                    $$
+                    </small>
+
+                    <p class="fragment fade-up"><small>Naïve doubly stochastic VI gradients:</small></p>
+
+                    <p class="fragment fade-up">
+                    <small>
+                    $$
+                    \begin{align}
+                    \dfrac{\partial KL}{\partial \boldsymbol\varphi}
+                    & = \int_{\boldsymbol\theta} \Big(
+                    \dfrac{\partial \log(\cdots)}{\partial\boldsymbol\varphi} + \log(\cdots) \dfrac{\partial \log q}{\partial\boldsymbol\varphi} \Big)
+                    q(\boldsymbol\theta | \boldsymbol\varphi) d\boldsymbol\theta \\
+                    & \approx \dfrac{1}{M}\dfrac{N}{B}
+                    \sum_{m=1}^M \sum_{b=1}^B \Big(
+                    \dfrac{\partial \log_{m,b}(\cdots)}{\partial\boldsymbol\varphi} + \log_{m,b}(\cdots) \dfrac{\partial \log q_m}{\partial\boldsymbol\varphi}
+                    \Big)
+                    \end{align}
+                    $$
+                    </small>
+                    </p>
+
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Reparameterisation Trick</span></h3>
+
+                    <p>
+                    Require: $\varepsilon \sim f_{\boldsymbol\varepsilon}$ and $g(\boldsymbol\varepsilon; \boldsymbol\varphi)$ such that
+                    </p>
+
+                    <p class="fragment fade-up">
+                    $$g(\boldsymbol\varepsilon;\boldsymbol\varphi) = \boldsymbol\theta \sim q(\cdot | \boldsymbol\varphi) $$
+                    </p>
+
+                    <p class="fragment fade-up">Stochastic Gradient Variational Bayes:</p>
+
+                    <p class="fragment fade-up">
+                    <small>
+                    $$
+                    KL(\boldsymbol\varphi)
+                    = \int_{\boldsymbol\theta} \log \Big(
+                    \dfrac{q(\boldsymbol\theta | \boldsymbol\varphi)}{\pi(\boldsymbol\theta | \mathcal{D})}
+                    \Big) q(\boldsymbol\theta | \boldsymbol\varphi) d\boldsymbol\theta
+                    = \int_{\boldsymbol\epsilon} \log \Big(
+                    \dfrac{q(g(\boldsymbol\varepsilon; \boldsymbol\varphi) | \boldsymbol\varphi)}{\pi(g(\boldsymbol\varepsilon; \boldsymbol\varphi) | \mathcal{D})}
+                    \Big) f_{\boldsymbol\varepsilon}(\boldsymbol\varepsilon) d\boldsymbol\varepsilon
+                    $$
+                    </small>
+                    </p>
+
+                    <p class="fragment fade-up">
+                    <small>
+                    $$
+                    \dfrac{\partial KL}{\partial \boldsymbol\varphi} \approx
+                    \sum_{m=1}^M \sum_{b=1}^B
+                    \dfrac{\partial KL_{m,b}}{\partial g_m}
+                    \dfrac{\partial g_m}{\partial \boldsymbol\varphi}
+                    $$
+                    </small>
+                    </p>
+
+                </section>
+                <section>
+                    <h3><span style="color:slateblue">Other Strategies</span></h3>
+                    <ul>
+                        <li>Variants of MCMC:</li>
+                        <ul>
+                            <li>Stochastic Gradient MCMC</li>
+                            <li>Particle MCMC</li>
+                            <li>Learned MCMC Kernels</li>
+                        </ul>
+                        <li>Expectation Propagation</li>
+                        <li>Approx. Bayesian Computations</li>
+                    </ul>
+                </section>
+            </section>
+
+        </div> </div>
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            // More info about config & dependencies:
+            // - https://github.com/hakimel/reveal.js#configuration
+            // - https://github.com/hakimel/reveal.js#dependencies
+            Reveal.initialize({
+                transition: "none",
+                history: true,
+                math: {
+                    mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+                    config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+                },
+                dependencies: [
+                    { src: 'plugin/markdown/marked.js' },
+                    { src: 'plugin/markdown/markdown.js' },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/math/math.js', async: true }
+                ]
+            });
+        </script>
+    </body>
+</html>
